@@ -1,11 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useCart } from "../../hooks/useCart";
 
 const Navbar = () => {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
 
   const capitalizeName = (name) => {
     if (!name) return "";
@@ -15,15 +14,6 @@ const Navbar = () => {
       .join(" ");
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
   const { currentUser, logout } = useAuth();
   const { cartCount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
@@ -63,16 +53,10 @@ const Navbar = () => {
             </Link>
             {/* Login / Profile */}
             {isLoggedIn ? (
-              <div className="relative group" ref={dropdownRef}>
-                <button
-                  className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold text-lg cursor-pointer hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-110 focus:outline-none"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDropdownOpen(!dropdownOpen);
-                  }}
-                >
+              <div className="relative group">
+                <div className="w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold text-lg cursor-pointer hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-110">
                   {currentUser?.name?.[0]?.toUpperCase() || "U"}
-                </button>
+                </div>
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-1 border border-gray-200 overflow-hidden">
                   <div className="px-4 py-2 text-sm font-semibold text-gray-900 border-b border-gray-100">
                     {capitalizeName(currentUser?.name) || "User"}
@@ -149,36 +133,41 @@ const Navbar = () => {
               )}
             </Link>
             {isLoggedIn ? (
-              <div className="relative group" ref={dropdownRef}>
-                <div
-                  className="w-12 h-12 rounded-full bg-indigo-600 text-white flex items-center justify-center font-semibold text-lg mx-auto cursor-pointer hover:bg-indigo-700 transition-all duration-200"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setDropdownOpen(!dropdownOpen);
-                  }}
+              <>
+                <button
+                  className="block w-full text-left px-4 py-3 text-lg font-semibold text-gray-900 hover:text-indigo-600 hover:bg-white rounded-lg transition-all border-t border-gray-200"
+                  onClick={() => setMobileProfileOpen(!mobileProfileOpen)}
                 >
-                  {currentUser?.name ? currentUser.name[0].toUpperCase() : "👤"}
-                </div>
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 py-1 border border-gray-200 overflow-hidden">
-                  <div className="px-4 py-2 text-sm font-semibold text-gray-900 border-b border-gray-100">
-                    {capitalizeName(currentUser?.name) || "User"}
-                  </div>
-                  <Link
-                    to="/orders"
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors block"
-                  >
-                    Orders
-                  </Link>
-                  <button
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                    onClick={() => {
-                      logout();
-                    }}
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
+                  {capitalizeName(currentUser?.name) || "Profile"}
+                  <span className="ml-2 text-indigo-600">
+                    {mobileProfileOpen ? "−" : "+"}
+                  </span>
+                </button>
+                {mobileProfileOpen && (
+                  <>
+                    <Link
+                      to="/orders"
+                      className="block pl-8 px-4 py-3 text-lg font-medium text-gray-700 hover:text-indigo-600 hover:bg-white rounded-lg transition-all mb-1"
+                      onClick={() => {
+                        setIsOpen(false);
+                        setMobileProfileOpen(false);
+                      }}
+                    >
+                      Orders
+                    </Link>
+                    <button
+                      className="block w-full text-left pl-8 px-4 py-3 text-lg font-medium text-gray-700 hover:text-indigo-600 hover:bg-white rounded-lg transition-all"
+                      onClick={() => {
+                        logout();
+                        setIsOpen(false);
+                        setMobileProfileOpen(false);
+                      }}
+                    >
+                      Logout
+                    </button>
+                  </>
+                )}
+              </>
             ) : (
               <Link
                 to="/login-signup"
